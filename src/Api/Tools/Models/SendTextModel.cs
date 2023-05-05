@@ -5,8 +5,6 @@ namespace Bit.Api.Tools.Models;
 
 public class SendTextModel
 {
-    public SendTextModel() { }
-
     public SendTextModel(SendTextData data)
     {
         Text = data.Text;

@@ -1,4 +1,5 @@
-﻿using Bit.Core.Enums.Provider;
+﻿#nullable enable
+using Bit.Core.Enums.Provider;
 using Bit.Core.Models.Api;
 using Bit.Core.Models.Data;
 using Bit.Core.Utilities;

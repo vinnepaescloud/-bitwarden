@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿#nullable enable
+using System.Text.Json;
 using Bit.Core.Entities;
 using Bit.Core.Models.Api;
 using Bit.Core.Settings;
@@ -26,27 +27,27 @@ public class CipherMiniResponseModel : ResponseModel
         {
             case CipherType.Login:
                 var loginData = JsonSerializer.Deserialize<CipherLoginData>(cipher.Data);
-                cipherData = loginData;
+                cipherData = loginData!;
                 Data = loginData;
-                Login = new CipherLoginModel(loginData);
+                Login = new CipherLoginModel(loginData!);
                 break;
             case CipherType.SecureNote:
                 var secureNoteData = JsonSerializer.Deserialize<CipherSecureNoteData>(cipher.Data);
                 Data = secureNoteData;
-                cipherData = secureNoteData;
-                SecureNote = new CipherSecureNoteModel(secureNoteData);
+                cipherData = secureNoteData!;
+                SecureNote = new CipherSecureNoteModel(secureNoteData!);
                 break;
             case CipherType.Card:
                 var cardData = JsonSerializer.Deserialize<CipherCardData>(cipher.Data);
                 Data = cardData;
-                cipherData = cardData;
-                Card = new CipherCardModel(cardData);
+                cipherData = cardData!;
+                Card = new CipherCardModel(cardData!);
                 break;
             case CipherType.Identity:
                 var identityData = JsonSerializer.Deserialize<CipherIdentityData>(cipher.Data);
                 Data = identityData;
-                cipherData = identityData;
-                Identity = new CipherIdentityModel(identityData);
+                cipherData = identityData!;
+                Identity = new CipherIdentityModel(identityData!);
                 break;
             default:
                 throw new ArgumentException("Unsupported " + nameof(Type) + ".");
@@ -68,16 +69,16 @@ public class CipherMiniResponseModel : ResponseModel
     public Guid Id { get; set; }
     public Guid? OrganizationId { get; set; }
     public CipherType Type { get; set; }
-    public dynamic Data { get; set; }
+    public dynamic? Data { get; set; }
     public string Name { get; set; }
     public string Notes { get; set; }
-    public CipherLoginModel Login { get; set; }
-    public CipherCardModel Card { get; set; }
-    public CipherIdentityModel Identity { get; set; }
-    public CipherSecureNoteModel SecureNote { get; set; }
-    public IEnumerable<CipherFieldModel> Fields { get; set; }
-    public IEnumerable<CipherPasswordHistoryModel> PasswordHistory { get; set; }
-    public IEnumerable<AttachmentResponseModel> Attachments { get; set; }
+    public CipherLoginModel? Login { get; set; }
+    public CipherCardModel? Card { get; set; }
+    public CipherIdentityModel? Identity { get; set; }
+    public CipherSecureNoteModel? SecureNote { get; set; }
+    public IEnumerable<CipherFieldModel>? Fields { get; set; }
+    public IEnumerable<CipherPasswordHistoryModel>? PasswordHistory { get; set; }
+    public IEnumerable<AttachmentResponseModel>? Attachments { get; set; }
     public bool OrganizationUseTotp { get; set; }
     public DateTime RevisionDate { get; set; }
     public DateTime CreationDate { get; set; }

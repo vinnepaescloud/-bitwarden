@@ -1,4 +1,5 @@
-﻿using Bit.Core.Enums;
+﻿#nullable enable
+using Bit.Core.Enums;
 using Bit.Core.Utilities;
 using Bit.Core.Vault.Models.Data;
 
@@ -6,8 +7,6 @@ namespace Bit.Api.Vault.Models;
 
 public class CipherLoginModel
 {
-    public CipherLoginModel() { }
-
     public CipherLoginModel(CipherLoginData data)
     {
         Uris = data.Uris?.Select(u => new CipherLoginUriModel(u))?.ToList();
@@ -25,7 +24,7 @@ public class CipherLoginModel
 
     [EncryptedString]
     [EncryptedStringLength(10000)]
-    public string Uri
+    public string? Uri
     {
         get => Uris?.FirstOrDefault()?.Uri;
         set
@@ -43,7 +42,7 @@ public class CipherLoginModel
             Uris.Add(new CipherLoginUriModel(value));
         }
     }
-    public List<CipherLoginUriModel> Uris { get; set; }
+    public List<CipherLoginUriModel>? Uris { get; set; }
     [EncryptedString]
     [EncryptedStringLength(1000)]
     public string Username { get; set; }
@@ -58,8 +57,6 @@ public class CipherLoginModel
 
     public class CipherLoginUriModel
     {
-        public CipherLoginUriModel() { }
-
         public CipherLoginUriModel(string uri)
         {
             Uri = uri;

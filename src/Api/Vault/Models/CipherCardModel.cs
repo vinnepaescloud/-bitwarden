@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿#nullable enable
+using System.ComponentModel.DataAnnotations;
 using Bit.Core.Utilities;
 using Bit.Core.Vault.Models.Data;
 
@@ -6,8 +7,6 @@ namespace Bit.Api.Vault.Models;
 
 public class CipherCardModel
 {
-    public CipherCardModel() { }
-
     public CipherCardModel(CipherCardData data)
     {
         CardholderName = data.CardholderName;

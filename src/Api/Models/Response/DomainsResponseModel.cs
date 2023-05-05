@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿#nullable enable
+using System.Text.Json;
 using Bit.Core.Entities;
 using Bit.Core.Enums;
 using Bit.Core.Models.Api;
@@ -19,7 +20,7 @@ public class DomainsResponseModel : ResponseModel
             JsonSerializer.Deserialize<List<List<string>>>(user.EquivalentDomains) : null;
 
         var excludedGlobalEquivalentDomains = user.ExcludedGlobalEquivalentDomains != null ?
-            JsonSerializer.Deserialize<List<GlobalEquivalentDomainsType>>(user.ExcludedGlobalEquivalentDomains) :
+            JsonSerializer.Deserialize<List<GlobalEquivalentDomainsType>>(user.ExcludedGlobalEquivalentDomains)! :
             new List<GlobalEquivalentDomainsType>();
         var globalDomains = new List<GlobalDomains>();
         var domainsToInclude = excluded ? Core.Utilities.StaticStore.GlobalDomains :
@@ -31,8 +32,8 @@ public class DomainsResponseModel : ResponseModel
         GlobalEquivalentDomains = !globalDomains.Any() ? null : globalDomains;
     }
 
-    public IEnumerable<IEnumerable<string>> EquivalentDomains { get; set; }
-    public IEnumerable<GlobalDomains> GlobalEquivalentDomains { get; set; }
+    public IEnumerable<IEnumerable<string>>? EquivalentDomains { get; set; }
+    public IEnumerable<GlobalDomains>? GlobalEquivalentDomains { get; set; }
 
 
     public class GlobalDomains

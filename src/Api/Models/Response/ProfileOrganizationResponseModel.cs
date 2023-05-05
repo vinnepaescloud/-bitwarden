@@ -1,4 +1,5 @@
-﻿using Bit.Core.Auth.Models.Data;
+﻿#nullable enable
+using Bit.Core.Auth.Models.Data;
 using Bit.Core.Enums;
 using Bit.Core.Enums.Provider;
 using Bit.Core.Models.Api;
@@ -12,7 +13,7 @@ public class ProfileOrganizationResponseModel : ResponseModel
 {
     public ProfileOrganizationResponseModel(string str) : base(str) { }
 
-    public ProfileOrganizationResponseModel(OrganizationUserOrganizationDetails organization) : this("profileOrganization")
+    public ProfileOrganizationResponseModel(OrganizationUserOrganizationDetails organization) : base("profileOrganization")
     {
         Id = organization.OrganizationId;
         Name = organization.Name;
@@ -101,11 +102,11 @@ public class ProfileOrganizationResponseModel : ResponseModel
     public Guid? ProviderId { get; set; }
     public string ProviderName { get; set; }
     public ProviderType? ProviderType { get; set; }
-    public string FamilySponsorshipFriendlyName { get; set; }
+    public string? FamilySponsorshipFriendlyName { get; set; }
     public bool FamilySponsorshipAvailable { get; set; }
     public ProductType PlanProductType { get; set; }
     public bool KeyConnectorEnabled { get; set; }
-    public string KeyConnectorUrl { get; set; }
+    public string? KeyConnectorUrl { get; set; }
     public DateTime? FamilySponsorshipLastSyncDate { get; set; }
     public DateTime? FamilySponsorshipValidUntil { get; set; }
     public bool? FamilySponsorshipToDelete { get; set; }

@@ -6,8 +6,6 @@ namespace Bit.Api.Tools.Models;
 
 public class SendFileModel
 {
-    public SendFileModel() { }
-
     public SendFileModel(SendFileData data)
     {
         Id = data.Id;

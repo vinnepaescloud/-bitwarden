@@ -1,4 +1,5 @@
-﻿using System.Text.Json.Serialization;
+﻿#nullable enable
+using System.Text.Json.Serialization;
 using Bit.Core.Models.Api;
 using Bit.Core.Settings;
 using Bit.Core.Utilities;
@@ -39,7 +40,7 @@ public class AttachmentResponseModel : ResponseModel
     public long Size { get; set; }
     public string SizeName { get; set; }
 
-    public static IEnumerable<AttachmentResponseModel> FromCipher(Cipher cipher, IGlobalSettings globalSettings)
+    public static IEnumerable<AttachmentResponseModel>? FromCipher(Cipher cipher, IGlobalSettings globalSettings)
     {
         var attachments = cipher.GetAttachments();
         if (attachments == null)

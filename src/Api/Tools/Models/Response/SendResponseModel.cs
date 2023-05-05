@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿#nullable enable
+using System.Text.Json;
 using Bit.Core.Models.Api;
 using Bit.Core.Settings;
 using Bit.Core.Tools.Entities;
@@ -36,13 +37,13 @@ public class SendResponseModel : ResponseModel
         {
             case SendType.File:
                 var fileData = JsonSerializer.Deserialize<SendFileData>(send.Data);
-                sendData = fileData;
-                File = new SendFileModel(fileData);
+                sendData = fileData!;
+                File = new SendFileModel(fileData!);
                 break;
             case SendType.Text:
                 var textData = JsonSerializer.Deserialize<SendTextData>(send.Data);
-                sendData = textData;
-                Text = new SendTextModel(textData);
+                sendData = textData!;
+                Text = new SendTextModel(textData!);
                 break;
             default:
                 throw new ArgumentException("Unsupported " + nameof(Type) + ".");
@@ -57,8 +58,8 @@ public class SendResponseModel : ResponseModel
     public SendType Type { get; set; }
     public string Name { get; set; }
     public string Notes { get; set; }
-    public SendFileModel File { get; set; }
-    public SendTextModel Text { get; set; }
+    public SendFileModel? File { get; set; }
+    public SendTextModel? Text { get; set; }
     public string Key { get; set; }
     public int? MaxAccessCount { get; set; }
     public int AccessCount { get; set; }

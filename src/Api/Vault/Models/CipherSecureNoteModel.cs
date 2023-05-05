@@ -1,12 +1,11 @@
-﻿using Bit.Core.Vault.Enums;
+﻿#nullable enable
+using Bit.Core.Vault.Enums;
 using Bit.Core.Vault.Models.Data;
 
 namespace Bit.Api.Vault.Models;
 
 public class CipherSecureNoteModel
 {
-    public CipherSecureNoteModel() { }
-
     public CipherSecureNoteModel(CipherSecureNoteData data)
     {
         Type = data.Type;

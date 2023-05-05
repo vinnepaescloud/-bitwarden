@@ -1,4 +1,5 @@
-﻿using Bit.Core.Utilities;
+﻿#nullable enable
+using Bit.Core.Utilities;
 using Bit.Core.Vault.Enums;
 using Bit.Core.Vault.Models.Data;
 
@@ -6,8 +7,6 @@ namespace Bit.Api.Vault.Models;
 
 public class CipherFieldModel
 {
-    public CipherFieldModel() { }
-
     public CipherFieldModel(CipherFieldData data)
     {
         Type = data.Type;

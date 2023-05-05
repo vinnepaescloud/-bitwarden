@@ -1,4 +1,5 @@
-﻿using Bit.Api.Models.Response;
+﻿#nullable enable
+using Bit.Api.Models.Response;
 using Bit.Api.Tools.Models.Response;
 using Bit.Core.Entities;
 using Bit.Core.Models.Api;
@@ -46,7 +47,7 @@ public class SyncResponseModel : ResponseModel
     public IEnumerable<FolderResponseModel> Folders { get; set; }
     public IEnumerable<CollectionDetailsResponseModel> Collections { get; set; }
     public IEnumerable<CipherDetailsResponseModel> Ciphers { get; set; }
-    public DomainsResponseModel Domains { get; set; }
+    public DomainsResponseModel? Domains { get; set; }
     public IEnumerable<PolicyResponseModel> Policies { get; set; }
     public IEnumerable<SendResponseModel> Sends { get; set; }
 }

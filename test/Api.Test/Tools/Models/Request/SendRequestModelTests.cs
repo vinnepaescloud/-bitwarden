@@ -2,6 +2,7 @@
 using Bit.Api.Tools.Models;
 using Bit.Api.Tools.Models.Request;
 using Bit.Core.Tools.Enums;
+using Bit.Core.Tools.Models.Data;
 using Bit.Core.Tools.Services;
 using Bit.Test.Common.Helpers;
 using NSubstitute;
@@ -25,11 +26,12 @@ public class SendRequestModelTests
             Name = "encrypted_name",
             Notes = null,
             Password = "Password",
-            Text = new SendTextModel()
+            Text = new SendTextModel(
+            new SendTextData
             {
                 Hidden = false,
                 Text = "encrypted_text"
-            },
+            }),
             Type = SendType.Text,
         };
 

@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿#nullable enable
+using System.Text.Json;
 using Bit.Core.Entities;
 using Bit.Core.Enums;
 
@@ -27,6 +28,6 @@ public class PolicyResponseModel : ResponseModel
     public Guid Id { get; set; }
     public Guid OrganizationId { get; set; }
     public PolicyType Type { get; set; }
-    public Dictionary<string, object> Data { get; set; }
+    public Dictionary<string, object>? Data { get; set; }
     public bool Enabled { get; set; }
 }

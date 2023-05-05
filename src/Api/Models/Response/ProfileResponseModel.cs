@@ -1,4 +1,5 @@
-﻿using Bit.Api.Models.Response.Providers;
+﻿#nullable enable
+using Bit.Api.Models.Response.Providers;
 using Bit.Core.Entities;
 using Bit.Core.Models.Api;
 using Bit.Core.Models.Data;
@@ -41,17 +42,13 @@ public class ProfileResponseModel : ResponseModel
             providerUserOrganizationDetails?.Select(po => new ProfileProviderOrganizationResponseModel(po));
     }
 
-    public ProfileResponseModel() : base("profile")
-    {
-    }
-
     public Guid Id { get; set; }
     public string Name { get; set; }
     public string Email { get; set; }
     public bool EmailVerified { get; set; }
     public bool Premium { get; set; }
     public bool PremiumFromOrganization { get; set; }
-    public string MasterPasswordHint { get; set; }
+    public string? MasterPasswordHint { get; set; }
     public string Culture { get; set; }
     public bool TwoFactorEnabled { get; set; }
     public string Key { get; set; }
@@ -60,7 +57,7 @@ public class ProfileResponseModel : ResponseModel
     public bool ForcePasswordReset { get; set; }
     public bool UsesKeyConnector { get; set; }
     public string AvatarColor { get; set; }
-    public IEnumerable<ProfileOrganizationResponseModel> Organizations { get; set; }
-    public IEnumerable<ProfileProviderResponseModel> Providers { get; set; }
-    public IEnumerable<ProfileProviderOrganizationResponseModel> ProviderOrganizations { get; set; }
+    public IEnumerable<ProfileOrganizationResponseModel>? Organizations { get; set; }
+    public IEnumerable<ProfileProviderResponseModel>? Providers { get; set; }
+    public IEnumerable<ProfileProviderOrganizationResponseModel>? ProviderOrganizations { get; set; }
 }

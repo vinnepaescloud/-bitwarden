@@ -1,4 +1,5 @@
-﻿using Bit.Core.Models.Data;
+﻿#nullable enable
+using Bit.Core.Models.Data;
 
 namespace Bit.Api.Models.Response;
 

@@ -62,6 +62,7 @@ public static class ServiceCollectionExtensions
 
             config.DescribeAllParametersInCamelCase();
             // config.UseReferencedDefinitionsForEnums();
+            config.SupportNonNullableReferenceTypes();
 
             var apiFilePath = Path.Combine(AppContext.BaseDirectory, "Api.xml");
             config.IncludeXmlComments(apiFilePath, true);

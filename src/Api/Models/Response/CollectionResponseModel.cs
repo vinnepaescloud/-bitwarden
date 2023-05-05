@@ -1,4 +1,5 @@
-﻿using Bit.Core.Entities;
+﻿#nullable enable
+using Bit.Core.Entities;
 using Bit.Core.Models.Api;
 using Bit.Core.Models.Data;
 
