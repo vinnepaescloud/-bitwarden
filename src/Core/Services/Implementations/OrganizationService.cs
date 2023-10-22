@@ -1053,12 +1053,47 @@ public class OrganizationService : IOrganizationService
         string MakeToken(OrganizationUser orgUser) =>
             _dataProtector.Protect($"OrganizationUserInvite {orgUser.Id} {orgUser.Email} {CoreHelpers.ToEpocMilliseconds(DateTime.UtcNow)}");
 
+        // Get existing BW users by email:
+        var orgUserEmails = orgUsers.Select(ou => ou.Email).ToList();
+        var existingUsers = await _userRepository.GetManyByEmailsAsync(orgUserEmails);
+
+        // hash existing users emails list for O(1) lookups
+        var existingUserEmails = new HashSet<string>(existingUsers.Select(u => u.Email));
+
+        // Create a dictionary of org user guids and bools for whether or not they have an existing BW user
+        var orgUserHasUserAccount = orgUsers.ToDictionary(
+            ou => ou.Id,
+            ou => existingUserEmails.Contains(ou.Email)
+        );
+
+        // Make a helper method for this and use in SendInvitesAsync and SendInviteAsync below
+        // 1. Given an org user, determine if existing BW user exists
+            // _userRepository.GetByEmailAsync() hits DB once per email
+            // will need to build GetManyByEmailAsync() to hit DB once for all org user emails
+            // feed into result dictionary to determine which org users have existing BW users
+
+        // 2. Determine if org has SSO enabled
+        //    2.a - get org SSO identifier if so
+
+        // First check if org can use SSO per plan:
+        // var orgCanUseSso = organization.UseSso;
+        // only retrieve sso config if org can use SSO
+        // var orgSsoConfig = await _ssoConfigRepository.GetByOrganizationIdAsync(organization.Id);
+        // look at orgSsoConfig.Enabled to determine enabled status
+        // organization.Identifier is org sso identifier
+
+        // 3. Determine if org has SSO login required policy enabled
+        // before calling policy repository, look at the organization.UsePolicies flag first b/c it tells us
+        // if they even have any policies
+        // await _policyRepository.GetByOrganizationIdTypeAsync(organization.Id, PolicyType.RequireSso);
+
         await _mailService.BulkSendOrganizationInviteEmailAsync(organization.Name,
             orgUsers.Select(o => (o, new ExpiringToken(MakeToken(o), DateTime.UtcNow.AddDays(5)))), organization.PlanType == PlanType.Free);
     }
 
     private async Task SendInviteAsync(OrganizationUser orgUser, Organization organization, bool initOrganization)
     {
+        // TODO DON"T FORGET ABOUT THIS METHOD
         var now = DateTime.UtcNow;
         var nowMillis = CoreHelpers.ToEpocMilliseconds(now);
         var token = _dataProtector.Protect(
