@@ -1070,49 +1070,49 @@ public class OrganizationService : IOrganizationService
         IEnumerable<OrganizationUser> orgUsers,
         Organization organization,
         bool initOrganization = false)
-{
-    // Materialize the sequence into a list to avoid multiple enumeration warnings
-    var orgUsersList = orgUsers.ToList();
+    {
+        // Materialize the sequence into a list to avoid multiple enumeration warnings
+        var orgUsersList = orgUsers.ToList();
 
-    // Email links must include information about the org and user for us to make routing decisions client side
-    // Given an org user, determine if existing BW user exists
-    var orgUserEmails = orgUsersList.Select(ou => ou.Email).ToList();
-    var existingUsers = await _userRepository.GetManyByEmailsAsync(orgUserEmails);
+        // Email links must include information about the org and user for us to make routing decisions client side
+        // Given an org user, determine if existing BW user exists
+        var orgUserEmails = orgUsersList.Select(ou => ou.Email).ToList();
+        var existingUsers = await _userRepository.GetManyByEmailsAsync(orgUserEmails);
 
-    // hash existing users emails list for O(1) lookups
-    var existingUserEmailsHashSet = new HashSet<string>(existingUsers.Select(u => u.Email));
+        // hash existing users emails list for O(1) lookups
+        var existingUserEmailsHashSet = new HashSet<string>(existingUsers.Select(u => u.Email));
 
-    // Create a dictionary of org user guids and bools for whether or not they have an existing BW user
-    var orgUserHasExistingUserDict = orgUsersList.ToDictionary(
-        ou => ou.Id,
-        ou => existingUserEmailsHashSet.Contains(ou.Email)
-    );
+        // Create a dictionary of org user guids and bools for whether or not they have an existing BW user
+        var orgUserHasExistingUserDict = orgUsersList.ToDictionary(
+            ou => ou.Id,
+            ou => existingUserEmailsHashSet.Contains(ou.Email)
+        );
 
-    // Determine if org has SSO enabled and if user is required to login with SSO
-    // Note: we only want to call the DB after checking if the org can use SSO per plan and if they have any policies enabled.
-    var orgSsoEnabled = organization.UseSso && (await _ssoConfigRepository.GetByOrganizationIdAsync(organization.Id)).Enabled;
-    // Even though the require SSO policy can be turned on regardless of SSO being enabled, for this logic, we only
-    // need to check the policy if the org has SSO enabled.
-    var orgSsoLoginRequiredPolicyEnabled = orgSsoEnabled &&
-                                           organization.UsePolicies &&
-                                           (await _policyRepository.GetByOrganizationIdTypeAsync(organization.Id, PolicyType.RequireSso)).Enabled;
+        // Determine if org has SSO enabled and if user is required to login with SSO
+        // Note: we only want to call the DB after checking if the org can use SSO per plan and if they have any policies enabled.
+        var orgSsoEnabled = organization.UseSso && (await _ssoConfigRepository.GetByOrganizationIdAsync(organization.Id)).Enabled;
+        // Even though the require SSO policy can be turned on regardless of SSO being enabled, for this logic, we only
+        // need to check the policy if the org has SSO enabled.
+        var orgSsoLoginRequiredPolicyEnabled = orgSsoEnabled &&
+                                               organization.UsePolicies &&
+                                               (await _policyRepository.GetByOrganizationIdTypeAsync(organization.Id, PolicyType.RequireSso)).Enabled;
 
-    // Generate the list of invites with their tokens
-    // create helper function to create tokens for the invites
-    string MakeToken(OrganizationUser orgUser) =>
-        _dataProtector.Protect($"OrganizationUserInvite {orgUser.Id} {orgUser.Email} {CoreHelpers.ToEpocMilliseconds(DateTime.UtcNow)}");
+        // Generate the list of invites with their tokens
+        // create helper function to create tokens for the invites
+        string MakeToken(OrganizationUser orgUser) =>
+            _dataProtector.Protect($"OrganizationUserInvite {orgUser.Id} {orgUser.Email} {CoreHelpers.ToEpocMilliseconds(DateTime.UtcNow)}");
 
-    var invites = orgUsersList.Select(o => (o, new ExpiringToken(MakeToken(o), DateTime.UtcNow.AddDays(5))));
+        var invites = orgUsersList.Select(o => (o, new ExpiringToken(MakeToken(o), DateTime.UtcNow.AddDays(5))));
 
-    return new OrganizationInvitesInfo(
-        organization,
-        orgSsoEnabled,
-        orgSsoLoginRequiredPolicyEnabled,
-        invites,
-        orgUserHasExistingUserDict,
-        initOrganization
-    );
-}
+        return new OrganizationInvitesInfo(
+            organization,
+            orgSsoEnabled,
+            orgSsoLoginRequiredPolicyEnabled,
+            invites,
+            orgUserHasExistingUserDict,
+            initOrganization
+        );
+    }
 
 
     public async Task<OrganizationUser> AcceptUserAsync(Guid organizationUserId, User user, string token,
