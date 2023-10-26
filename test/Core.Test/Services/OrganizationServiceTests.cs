@@ -84,7 +84,7 @@ public class OrganizationServiceTests
 
         await sutProvider.GetDependency<IMailService>().Received(1)
             .SendOrganizationInviteEmailsAsync(
-                Arg.Is<OrganizationInvitesInfo>(info => info.Invites.Count() == expectedNewUsersCount && info.IsFreeOrg == (org.PlanType == PlanType.Free) && info.OrganizationName == org.Name));
+                Arg.Is<OrganizationInvitesInfo>(info => info.OrgUserTokenPairs.Count() == expectedNewUsersCount && info.IsFreeOrg == (org.PlanType == PlanType.Free) && info.OrganizationName == org.Name));
 
         // Send events
         await sutProvider.GetDependency<IEventService>().Received(1)
@@ -149,7 +149,7 @@ public class OrganizationServiceTests
 
         await sutProvider.GetDependency<IMailService>().Received(1)
             .SendOrganizationInviteEmailsAsync(Arg.Is<OrganizationInvitesInfo>(info =>
-                info.Invites.Count() == expectedNewUsersCount && info.IsFreeOrg == (org.PlanType == PlanType.Free) && info.OrganizationName == org.Name));
+                info.OrgUserTokenPairs.Count() == expectedNewUsersCount && info.IsFreeOrg == (org.PlanType == PlanType.Free) && info.OrganizationName == org.Name));
 
         // Sent events
         await sutProvider.GetDependency<IEventService>().Received(1)
@@ -376,7 +376,7 @@ public class OrganizationServiceTests
 
         await sutProvider.GetDependency<IMailService>().Received(1)
             .SendOrganizationInviteEmailsAsync(Arg.Is<OrganizationInvitesInfo>(info =>
-                info.Invites.Count() == invite.Emails.Distinct().Count() &&
+                info.OrgUserTokenPairs.Count() == invite.Emails.Distinct().Count() &&
                 info.IsFreeOrg == (organization.PlanType == PlanType.Free) &&
                 info.OrganizationName == organization.Name));
 
@@ -648,7 +648,7 @@ public class OrganizationServiceTests
 
         await sutProvider.GetDependency<IMailService>().Received(1)
             .SendOrganizationInviteEmailsAsync(Arg.Is<OrganizationInvitesInfo>(info =>
-                info.Invites.Count() == invites.SelectMany(i => i.invite.Emails).Count() &&
+                info.OrgUserTokenPairs.Count() == invites.SelectMany(i => i.invite.Emails).Count() &&
                 info.IsFreeOrg == (organization.PlanType == PlanType.Free) &&
                 info.OrganizationName == organization.Name));
 
@@ -686,7 +686,7 @@ public class OrganizationServiceTests
 
         await sutProvider.GetDependency<IMailService>().Received(1)
             .SendOrganizationInviteEmailsAsync(Arg.Is<OrganizationInvitesInfo>(info =>
-                info.Invites.Count() == invites.SelectMany(i => i.invite.Emails).Count() &&
+                info.OrgUserTokenPairs.Count() == invites.SelectMany(i => i.invite.Emails).Count() &&
                 info.IsFreeOrg == (organization.PlanType == PlanType.Free) &&
                 info.OrganizationName == organization.Name));
 
