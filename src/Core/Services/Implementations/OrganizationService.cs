@@ -1056,7 +1056,7 @@ public class OrganizationService : IOrganizationService
     {
         var orgInvitesInfo = await BuildOrganizationInvitesInfoAsync(orgUsers, organization);
 
-        await _mailService.BulkSendOrganizationInviteEmailAsync(orgInvitesInfo);
+        await _mailService.SendOrganizationInviteEmailsAsync(orgInvitesInfo);
     }
 
     private async Task SendInviteAsync(OrganizationUser orgUser, Organization organization, bool initOrganization)
@@ -1066,7 +1066,7 @@ public class OrganizationService : IOrganizationService
 
         var orgInvitesInfo = await BuildOrganizationInvitesInfoAsync(orgUsers, organization, initOrganization);
 
-        await _mailService.BulkSendOrganizationInviteEmailAsync(orgInvitesInfo);
+        await _mailService.SendOrganizationInviteEmailsAsync(orgInvitesInfo);
     }
 
     private async Task<OrganizationInvitesInfo> BuildOrganizationInvitesInfoAsync(
