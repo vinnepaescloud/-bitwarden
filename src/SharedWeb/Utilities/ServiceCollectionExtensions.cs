@@ -3,6 +3,9 @@ using System.Reflection;
 using System.Security.Claims;
 using System.Security.Cryptography.X509Certificates;
 using AspNetCoreRateLimit;
+using Bit.Core.AdminConsole.Services;
+using Bit.Core.AdminConsole.Services.Implementations;
+using Bit.Core.AdminConsole.Services.NoopImplementations;
 using Bit.Core.Auth.Enums;
 using Bit.Core.Auth.Identity;
 using Bit.Core.Auth.IdentityServer;
@@ -166,6 +169,18 @@ public static class ServiceCollectionExtensions
                 SsoTokenable.DataProtectorPurpose,
                 serviceProvider.GetDataProtectionProvider(),
                 serviceProvider.GetRequiredService<ILogger<DataProtectorTokenFactory<SsoTokenable>>>()));
+        services.AddSingleton<IDataProtectorTokenFactory<WebAuthnLoginTokenable>>(serviceProvider =>
+            new DataProtectorTokenFactory<WebAuthnLoginTokenable>(
+                WebAuthnLoginTokenable.ClearTextPrefix,
+                WebAuthnLoginTokenable.DataProtectorPurpose,
+                serviceProvider.GetDataProtectionProvider(),
+                serviceProvider.GetRequiredService<ILogger<DataProtectorTokenFactory<WebAuthnLoginTokenable>>>()));
+        services.AddSingleton<IDataProtectorTokenFactory<WebAuthnCredentialCreateOptionsTokenable>>(serviceProvider =>
+            new DataProtectorTokenFactory<WebAuthnCredentialCreateOptionsTokenable>(
+                WebAuthnCredentialCreateOptionsTokenable.ClearTextPrefix,
+                WebAuthnCredentialCreateOptionsTokenable.DataProtectorPurpose,
+                serviceProvider.GetDataProtectionProvider(),
+                serviceProvider.GetRequiredService<ILogger<DataProtectorTokenFactory<WebAuthnCredentialCreateOptionsTokenable>>>()));
         services.AddSingleton<IDataProtectorTokenFactory<SsoEmail2faSessionTokenable>>(serviceProvider =>
             new DataProtectorTokenFactory<SsoEmail2faSessionTokenable>(
                 SsoEmail2faSessionTokenable.ClearTextPrefix,
