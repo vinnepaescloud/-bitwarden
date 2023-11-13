@@ -1111,14 +1111,8 @@ public class OrganizationService : IOrganizationService
                                                organization.UsePolicies &&
                                                (await _policyRepository.GetByOrganizationIdTypeAsync(organization.Id, PolicyType.RequireSso)).Enabled;
 
-        // Generate the list of invites with their tokens
-        // create helper function to create tokens for the invites
-        string MakeToken(OrganizationUser orgUser) =>
-            _dataProtector.Protect($"OrganizationUserInvite {orgUser.Id} {orgUser.Email} {CoreHelpers.ToEpocMilliseconds(DateTime.UtcNow)}");
-
-        var invites = orgUsersList.Select(o => (o, new ExpiringToken(MakeToken(o), DateTime.UtcNow.AddDays(5))));
-
-
+        // Generate the list of org users and expiring tokens
+        // create helper function to create expiring tokens
         (OrganizationUser, ExpiringToken) MakeOrgUserExpiringTokenPair(OrganizationUser orgUser)
         {
             var orgUserInviteTokenable = _orgUserInviteTokenableFactory.CreateToken(orgUser);
@@ -1128,12 +1122,11 @@ public class OrganizationService : IOrganizationService
 
         var orgUsersWithExpTokens = orgUsers.Select(MakeOrgUserExpiringTokenPair);
 
-
         return new OrganizationInvitesInfo(
             organization,
             orgSsoEnabled,
             orgSsoLoginRequiredPolicyEnabled,
-            invites,
+            orgUsersWithExpTokens,
             orgUserHasExistingUserDict,
             initOrganization
         );
