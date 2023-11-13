@@ -711,6 +711,7 @@ public class OrganizationServiceTests
             );
 
         SetupOrgUserRepositoryCreateManyAsyncMock(organizationUserRepository);
+        SetupOrgUserRepositoryCreateAsyncMock(organizationUserRepository);
 
         await sutProvider.Sut.InviteUsersAsync(organization.Id, invitor.UserId, invites);
 
@@ -750,6 +751,8 @@ public class OrganizationServiceTests
         organizationRepository.GetByIdAsync(organization.Id).Returns(organization);
         organizationUserRepository.GetManyByOrganizationAsync(organization.Id, OrganizationUserType.Owner)
             .Returns(new[] { owner });
+
+        SetupOrgUserRepositoryCreateAsyncMock(organizationUserRepository);
         SetupOrgUserRepositoryCreateManyAsyncMock(organizationUserRepository);
 
         currentContext.ManageUsers(organization.Id).Returns(true);
@@ -797,6 +800,7 @@ public class OrganizationServiceTests
 
         var organizationUserRepository = sutProvider.GetDependency<IOrganizationUserRepository>();
         SetupOrgUserRepositoryCreateManyAsyncMock(organizationUserRepository);
+        SetupOrgUserRepositoryCreateAsyncMock(organizationUserRepository);
 
         await sutProvider.Sut.InviteUsersAsync(organization.Id, savingUser.Id, invites);
 
@@ -2041,6 +2045,7 @@ public class OrganizationServiceTests
         Assert.Contains("custom users can only grant the same custom permissions that they have.", exception.Message.ToLowerInvariant());
     }
 
+    // Must set real guids in order for dictionary of guids to not throw aggregate exceptions
     private void SetupOrgUserRepositoryCreateManyAsyncMock(IOrganizationUserRepository organizationUserRepository)
     {
         organizationUserRepository.CreateManyAsync(Arg.Any<IEnumerable<OrganizationUser>>()).Returns(
@@ -2053,6 +2058,20 @@ public class OrganizationServiceTests
                 }
 
                 return Task.FromResult<ICollection<Guid>>(orgUsers.Select(u => u.Id).ToList());
+            }
+        );
+    }
+
+    // Must set real guids in order for dictionary of guids to not throw aggregate exceptions
+    private void SetupOrgUserRepositoryCreateAsyncMock(IOrganizationUserRepository organizationUserRepository)
+    {
+        organizationUserRepository.CreateAsync(Arg.Any<OrganizationUser>(),
+            Arg.Any<IEnumerable<CollectionAccessSelection>>()).Returns(
+            info =>
+            {
+                var orgUser = info.Arg<OrganizationUser>();
+                orgUser.Id = Guid.NewGuid();
+                return Task.FromResult<Guid>(orgUser.Id);
             }
         );
     }
