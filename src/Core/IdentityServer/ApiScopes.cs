@@ -1,6 +1,4 @@
-﻿using IdentityServer4.Models;
-
-namespace Bit.Core.IdentityServer;
+﻿namespace Bit.Core.IdentityServer;
 
 public static class ApiScopes
 {

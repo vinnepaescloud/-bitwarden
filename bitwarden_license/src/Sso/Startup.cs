@@ -6,7 +6,6 @@ using Bit.Core.Settings;
 using Bit.Core.Utilities;
 using Bit.SharedWeb.Utilities;
 using Bit.Sso.Utilities;
-using IdentityServer4.Extensions;
 using Microsoft.IdentityModel.Logging;
 using Stripe;
 

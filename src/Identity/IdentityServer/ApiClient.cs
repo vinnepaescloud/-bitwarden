@@ -1,5 +1,4 @@
 ﻿using Bit.Core.Settings;
-using IdentityServer4.Models;
 
 namespace Bit.Identity.IdentityServer;
 
@@ -13,7 +12,7 @@ public class ApiClient : Client
         string[] scopes = null)
     {
         ClientId = id;
-        AllowedGrantTypes = new[] { GrantType.ResourceOwnerPassword, GrantType.AuthorizationCode };
+        AllowedGrantTypes = new[] { GrantType.ResourceOwnerPassword, GrantType.AuthorizationCode, WebAuthnGrantValidator.GrantType };
         RefreshTokenExpiration = TokenExpiration.Sliding;
         RefreshTokenUsage = TokenUsage.ReUse;
         SlidingRefreshTokenLifetime = 86400 * refreshTokenSlidingDays;

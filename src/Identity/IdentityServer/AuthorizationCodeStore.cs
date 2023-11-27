@@ -1,13 +1,5 @@
-﻿using IdentityServer4;
-using IdentityServer4.Extensions;
-using IdentityServer4.Models;
-using IdentityServer4.Services;
-using IdentityServer4.Stores;
-using IdentityServer4.Stores.Serialization;
+﻿namespace Bit.Identity.IdentityServer;
 
-namespace Bit.Identity.IdentityServer;
-
-// ref: https://raw.githubusercontent.com/IdentityServer/IdentityServer4/3.1.3/src/IdentityServer4/src/Stores/Default/DefaultAuthorizationCodeStore.cs
 public class AuthorizationCodeStore : DefaultGrantStore<AuthorizationCode>, IAuthorizationCodeStore
 {
     public AuthorizationCodeStore(

@@ -1,6 +1,4 @@
-﻿using IdentityServer4.Models;
-
-namespace Bit.Sso.Models;
+﻿namespace Bit.Sso.Models;
 
 public class ErrorViewModel
 {

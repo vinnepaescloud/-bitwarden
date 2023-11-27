@@ -1,13 +1,10 @@
 ﻿using Bit.Core.Settings;
 using Bit.Core.Utilities;
-using IdentityServer4.Configuration;
-using IdentityServer4.Services;
-using IdentityServer4.Stores;
-using IdentityServer4.Validation;
+using DIR = Duende.IdentityServer.ResponseHandling;
 
 namespace Bit.Sso.Utilities;
 
-public class DiscoveryResponseGenerator : IdentityServer4.ResponseHandling.DiscoveryResponseGenerator
+public class DiscoveryResponseGenerator : DIR.DiscoveryResponseGenerator
 {
     private readonly GlobalSettings _globalSettings;
 
