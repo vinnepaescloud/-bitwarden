@@ -1424,7 +1424,29 @@ public class OrganizationService : IOrganizationService
             // We don't need any collections if we're flagged to have all access.
             collections = new List<CollectionAccessSelection>();
         }
-        await _organizationUserRepository.ReplaceAsync(user, collections);
+
+        // TODO: shortcut here if this isn't actually required
+        // get the target orgUser's current collection associations
+        var (_, currentCollectionsAssociations) = await _organizationUserRepository.GetByIdWithCollectionsAsync(user.Id);
+
+        // get the saving user's current collection permissions
+        var currentCollections = await _collectionRepository.GetManyByUserIdAsync(_currentContext.UserId.Value, false);
+        var editableCollectionIds = currentCollections.Where(c => c.Manage).Select(c => c.Id);
+
+        // associations we can edit
+        var editableAssociations = currentCollectionsAssociations.Where(cas => editableCollectionIds.Contains(cas.Id));
+        var readonlyAssociations = currentCollectionsAssociations.Where(cas => !editableCollectionIds.Contains(cas.Id));
+
+        // make sure we're only editing what we're allowed to
+        if (collections.Any(c => !editableAssociations.Select(cas => cas.Id).Contains(c.Id)))
+        {
+            throw new BadRequestException("You must have Can Manage permissions to edit a collection's membership");
+        }
+
+        // Client only sends editable collections, add on the readonly before upserting
+        var collectionsToUpsert = collections.Concat(readonlyAssociations);
+
+        await _organizationUserRepository.ReplaceAsync(user, collectionsToUpsert);
 
         if (groups != null)
         {
