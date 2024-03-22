@@ -3,6 +3,7 @@ using Bit.Api.AdminConsole.Models.Response.Organizations;
 using Bit.Api.Models.Request.Organizations;
 using Bit.Api.Models.Response;
 using Bit.Api.Utilities;
+using Bit.Api.Vault.AuthorizationHandlers.Collections;
 using Bit.Api.Vault.AuthorizationHandlers.OrganizationUsers;
 using Bit.Core;
 using Bit.Core.AdminConsole.Enums;
@@ -184,6 +185,15 @@ public class OrganizationUsersController : Controller
     {
         var orgGuidId = new Guid(orgId);
         if (!await _currentContext.ManageUsers(orgGuidId))
+        {
+            throw new NotFoundException();
+        }
+
+        var collections = await _collectionRepository.GetManyByManyIdsAsync(model.Collections.Select(a => a.Id));
+        var authorized =
+            (await _authorizationService.AuthorizeAsync(User, collections, BulkCollectionOperations.ModifyAccess))
+            .Succeeded;
+        if (!authorized)
         {
             throw new NotFoundException();
         }
