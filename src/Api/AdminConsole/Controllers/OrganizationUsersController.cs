@@ -349,8 +349,34 @@ public class OrganizationUsersController : Controller
             ? null
             : model.Groups;
 
+        // TODO: "if can edit any collection"
+        var canEditAnyCollection = false;
+        var collections = model.Collections?.Select(c => c.ToSelectionReadOnly()).ToList();
+        if (organizationAbility.FlexibleCollections && !canEditAnyCollection)
+        {
+            // get the target orgUser's current collection associations
+            var (_, currentCollectionsAssociations) = await _organizationUserRepository.GetByIdWithCollectionsAsync(id);
+
+            // get the saving user's current collection permissions
+            var currentCollections =
+                await _collectionRepository.GetManyByUserIdAsync(_currentContext.UserId.Value, false);
+            var editableCollectionIds = currentCollections.Where(c => c.Manage).Select(c => c.Id);
+
+            // identify the collections we can't edit
+            var readonlyAssociations =
+                currentCollectionsAssociations.Where(cas => !editableCollectionIds.Contains(cas.Id)).ToList();
+
+            if (collections.Any(c => readonlyAssociations.Select(cas => cas.Id).Contains(c.Id)))
+            {
+                throw new BadRequestException("You must have Can Manage permissions to edit a collection's membership");
+            }
+
+            // Client only sends editable collections, add on the readonly before upserting
+            collections = collections.Concat(readonlyAssociations).ToList();
+        }
+
         await _organizationService.SaveUserAsync(model.ToOrganizationUser(organizationUser), userId,
-            model.Collections?.Select(c => c.ToSelectionReadOnly()).ToList(), groups);
+            collections, groups);
     }
 
     [HttpPut("{userId}/reset-password-enrollment")]
