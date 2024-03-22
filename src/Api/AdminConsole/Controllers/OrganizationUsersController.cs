@@ -181,21 +181,25 @@ public class OrganizationUsersController : Controller
     }
 
     [HttpPost("invite")]
-    public async Task Invite(string orgId, [FromBody] OrganizationUserInviteRequestModel model)
+    public async Task Invite(Guid orgId, [FromBody] OrganizationUserInviteRequestModel model)
     {
-        var orgGuidId = new Guid(orgId);
-        if (!await _currentContext.ManageUsers(orgGuidId))
+        if (!await _currentContext.ManageUsers(orgId))
         {
             throw new NotFoundException();
         }
 
-        var collections = await _collectionRepository.GetManyByManyIdsAsync(model.Collections.Select(a => a.Id));
-        var authorized =
-            (await _authorizationService.AuthorizeAsync(User, collections, BulkCollectionOperations.ModifyAccess))
-            .Succeeded;
-        if (!authorized)
+        // Flexible Collections - check the user has permission to grant access to the collections for the new user
+        var organizationAbility = await _applicationCacheService.GetOrganizationAbilityAsync(orgId);
+        if (organizationAbility?.FlexibleCollections ?? false)
         {
-            throw new NotFoundException();
+            var collections = await _collectionRepository.GetManyByManyIdsAsync(model.Collections.Select(a => a.Id));
+            var authorized =
+                (await _authorizationService.AuthorizeAsync(User, collections, BulkCollectionOperations.ModifyAccess))
+                .Succeeded;
+            if (!authorized)
+            {
+                throw new NotFoundException();
+            }
         }
 
         var userId = _userService.GetProperUserId(User);
