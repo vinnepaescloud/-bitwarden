@@ -186,7 +186,7 @@ public class BulkCollectionAuthorizationHandler : BulkAuthorizationHandler<BulkC
     {
         // Users with EditAnyCollection permission can always update a collection
         if (org is
-        { Permissions.EditAnyCollection: true })
+            { Permissions.EditAnyCollection: true })
         {
             context.Succeed(requirement);
             return;
@@ -194,7 +194,7 @@ public class BulkCollectionAuthorizationHandler : BulkAuthorizationHandler<BulkC
 
         // Owners and Admins can update any collection only if permitted by collection management settings
         var organizationAbility = await GetOrganizationAbilityAsync(org);
-        if (organizationAbility is { AllowAdminAccessToAllCollectionItems: true} &&
+        if (organizationAbility is { AllowAdminAccessToAllCollectionItems: true } &&
             org is { Type: OrganizationUserType.Owner or OrganizationUserType.Admin })
         {
             context.Succeed(requirement);

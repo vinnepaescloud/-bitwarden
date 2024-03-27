@@ -11,10 +11,12 @@ using Bit.Core.AdminConsole.Models.Data.Organizations.Policies;
 using Bit.Core.AdminConsole.OrganizationFeatures.OrganizationUsers.Interfaces;
 using Bit.Core.AdminConsole.Repositories;
 using Bit.Core.Context;
+using Bit.Core.Entities;
 using Bit.Core.Enums;
 using Bit.Core.Exceptions;
 using Bit.Core.Models.Business;
 using Bit.Core.Models.Data;
+using Bit.Core.Models.Data.Organizations;
 using Bit.Core.Models.Data.Organizations.OrganizationUsers;
 using Bit.Core.OrganizationFeatures.OrganizationSubscriptions.Interface;
 using Bit.Core.OrganizationFeatures.OrganizationUsers.Interfaces;
@@ -339,44 +341,10 @@ public class OrganizationUsersController : Controller
             throw new NotFoundException();
         }
 
-        // If admins are not allowed access to all collections, you cannot add yourself to a group
-        // In this case we just don't update groups
-        var userId = _userService.GetProperUserId(User).Value;
         var organizationAbility = await _applicationCacheService.GetOrganizationAbilityAsync(orgId);
-        var restrictEditingGroups = _featureService.IsEnabled(FeatureFlagKeys.FlexibleCollectionsV1) &&
-                                    organizationAbility.FlexibleCollections &&
-                                    userId == organizationUser.UserId &&
-                                    !organizationAbility.AllowAdminAccessToAllCollectionItems;
-
-        var groups = restrictEditingGroups
-            ? null
-            : model.Groups;
-
-        // TODO: "if can edit any collection"
-        var canEditAnyCollection = false;
-        var collections = model.Collections?.Select(c => c.ToSelectionReadOnly()).ToList();
-        if (organizationAbility.FlexibleCollections && !canEditAnyCollection)
-        {
-            // get the target orgUser's current collection associations
-            var (_, currentCollectionsAssociations) = await _organizationUserRepository.GetByIdWithCollectionsAsync(id);
-
-            // get the saving user's current collection permissions
-            var currentCollections =
-                await _collectionRepository.GetManyByUserIdAsync(_currentContext.UserId.Value, false);
-            var editableCollectionIds = currentCollections.Where(c => c.Manage).Select(c => c.Id);
-
-            // identify the collections we can't edit
-            var readonlyAssociations =
-                currentCollectionsAssociations.Where(cas => !editableCollectionIds.Contains(cas.Id)).ToList();
-
-            if (collections.Any(c => readonlyAssociations.Select(cas => cas.Id).Contains(c.Id)))
-            {
-                throw new BadRequestException("You must have Can Manage permissions to edit a collection's membership");
-            }
-
-            // Client only sends editable collections, add on the readonly before upserting
-            collections = collections.Concat(readonlyAssociations).ToList();
-        }
+        var groups = GetGroupAccessToUpdate(model, organizationAbility, organizationUser);
+        var collections = await GetCollectionAccessToUpdateAsync(organizationAbility, model);
+        var userId = _userService.GetProperUserId(User).Value;
 
         await _organizationService.SaveUserAsync(model.ToOrganizationUser(organizationUser), userId,
             collections, groups);
@@ -635,5 +603,65 @@ public class OrganizationUsersController : Controller
         }
 
         return type;
+    }
+
+    private IEnumerable<Guid> GetGroupAccessToUpdate(OrganizationUserUpdateRequestModel model,
+        OrganizationAbility organizationAbility, OrganizationUser userToUpdate)
+    {
+        var userId = _userService.GetProperUserId(User).Value;
+
+        // If admins are not allowed access to all collections, you cannot add yourself to a group
+        // In this case we just don't update groups
+        var restrictEditingGroups = _featureService.IsEnabled(FeatureFlagKeys.FlexibleCollectionsV1) &&
+                                    organizationAbility.FlexibleCollections &&
+                                    userId == userToUpdate.UserId &&
+                                    !organizationAbility.AllowAdminAccessToAllCollectionItems;
+
+        return restrictEditingGroups
+            ? null
+            : model.Groups;
+    }
+
+    /// <summary>
+    /// The client will only send updated CollectionAccessSelections that the saving user has permissions to change.
+    /// We need to match these up with CollectionAccessSelections that the saving user DOESN'T have permissions to
+    /// change, so that we don't blast them away when we update the database.
+    /// </summary>
+    private async Task<List<CollectionAccessSelection>> GetCollectionAccessToUpdateAsync(
+        OrganizationAbility organizationAbility,
+        OrganizationUserUpdateRequestModel model)
+    {
+        var collections = model.Collections?.Select(c => c.ToSelectionReadOnly()).ToList();
+
+        // If the current user can edit any collection, we can safely replace all the target orgUser's collection access
+        var canEditAnyCollection =
+            (await _authorizationService.AuthorizeAsync(User, CollectionOperations.EditAll(organizationAbility.Id))).Succeeded;
+        if (!organizationAbility.FlexibleCollections || canEditAnyCollection || collections is null)
+        {
+            return collections;
+        }
+
+        // If the current user cannot edit any collection, we need to add existing readonly collection associations
+
+        // get the target orgUser's current collection associations
+        var (_, targetUserCurrentCollections) =
+            await _organizationUserRepository.GetByIdWithCollectionsAsync(organizationAbility.Id);
+
+        // get the saving user's current collection permissions
+        var savingUserCollections =
+            await _collectionRepository.GetManyByUserIdAsync(_currentContext.UserId.Value, false);
+        var editableCollectionIds = savingUserCollections.Where(c => c.Manage).Select(c => c.Id);
+
+        // identify the collections we can't edit
+        var readonlyAssociations =
+            targetUserCurrentCollections.Where(cas => !editableCollectionIds.Contains(cas.Id)).ToList();
+
+        // Make sure we're not trying to give access to a collection we can't manage
+        if (collections.Any(c => readonlyAssociations.Select(cas => cas.Id).Contains(c.Id)))
+        {
+            throw new BadRequestException("You must have Can Manage permissions to edit a collection's membership");
+        }
+
+        return collections.Concat(readonlyAssociations).ToList();
     }
 }
