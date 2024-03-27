@@ -636,7 +636,7 @@ public class OrganizationUsersController : Controller
         // If the current user can edit any collection, we can safely replace all the target orgUser's collection access
         var canEditAnyCollection =
             (await _authorizationService.AuthorizeAsync(User, CollectionOperations.EditAll(organizationAbility.Id))).Succeeded;
-        if (!organizationAbility.FlexibleCollections || canEditAnyCollection || collections is null)
+        if (!organizationAbility.FlexibleCollections || canEditAnyCollection)
         {
             return collections;
         }
