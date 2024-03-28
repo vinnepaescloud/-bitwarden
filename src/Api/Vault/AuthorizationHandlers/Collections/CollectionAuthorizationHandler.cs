@@ -1,4 +1,5 @@
 ﻿#nullable enable
+using Bit.Core;
 using Bit.Core.Context;
 using Bit.Core.Enums;
 using Bit.Core.Services;
@@ -120,7 +121,7 @@ public class CollectionAuthorizationHandler : AuthorizationHandler<CollectionOpe
         if (org is not null)
         {
             var organizationAbility = await _applicationCacheService.GetOrganizationAbilityAsync(org.Id);
-            if (organizationAbility is { AllowAdminAccessToAllCollectionItems: true } &&
+            if ((organizationAbility is { AllowAdminAccessToAllCollectionItems: true } || !_featureService.IsEnabled(FeatureFlagKeys.FlexibleCollectionsV1)) &&
                 org is { Type: OrganizationUserType.Owner or OrganizationUserType.Admin })
             {
                 context.Succeed(requirement);
