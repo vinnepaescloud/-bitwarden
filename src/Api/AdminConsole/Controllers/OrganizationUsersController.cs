@@ -631,7 +631,7 @@ public class OrganizationUsersController : Controller
         OrganizationAbility organizationAbility,
         OrganizationUserUpdateRequestModel model)
     {
-        var collections = model.Collections?.Select(c => c.ToSelectionReadOnly()).ToList();
+        var collections = model.Collections?.Select(c => c.ToSelectionReadOnly()).ToList() ?? [];
 
         // If the current user can edit any collection, we can safely replace all the target orgUser's collection access
         var canEditAnyCollection =
@@ -650,14 +650,22 @@ public class OrganizationUsersController : Controller
         // get the saving user's current collection permissions
         var savingUserCollections =
             await _collectionRepository.GetManyByUserIdAsync(_currentContext.UserId.Value, false);
-        var editableCollectionIds = savingUserCollections.Where(c => c.Manage).Select(c => c.Id);
+        var editableCollectionIds = savingUserCollections
+            .Where(c => c.Manage)
+            .Select(c => c.Id)
+            .ToHashSet();
 
         // identify the collections we can't edit
         var readonlyAssociations =
-            targetUserCurrentCollections.Where(cas => !editableCollectionIds.Contains(cas.Id)).ToList();
+            targetUserCurrentCollections
+                .Where(cas => !editableCollectionIds.Contains(cas.Id))
+                .ToList();
 
-        // Make sure we're not trying to give access to a collection we can't manage
-        if (collections.Any(c => readonlyAssociations.Select(cas => cas.Id).Contains(c.Id)))
+        // Make sure we're not trying to create or modify access to a collection we can't manage
+        var readonlyAssociationIds = readonlyAssociations
+            .Select(cas => cas.Id)
+            .ToHashSet();
+        if (collections.Any(c => readonlyAssociationIds.Contains(c.Id)))
         {
             throw new BadRequestException("You must have Can Manage permissions to edit a collection's membership");
         }
