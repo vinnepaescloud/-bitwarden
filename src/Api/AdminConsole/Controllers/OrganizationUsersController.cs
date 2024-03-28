@@ -46,6 +46,7 @@ public class OrganizationUsersController : Controller
     private readonly IAuthorizationService _authorizationService;
     private readonly IApplicationCacheService _applicationCacheService;
     private readonly IFeatureService _featureService;
+    private readonly ICollectionAuthorizationHelpers _collectionAuthorizationHelpers;
 
     public OrganizationUsersController(
         IOrganizationRepository organizationRepository,
@@ -62,7 +63,8 @@ public class OrganizationUsersController : Controller
         IAcceptOrgUserCommand acceptOrgUserCommand,
         IAuthorizationService authorizationService,
         IApplicationCacheService applicationCacheService,
-        IFeatureService featureService)
+        IFeatureService featureService,
+        ICollectionAuthorizationHelpers collectionAuthorizationHelpers)
     {
         _organizationRepository = organizationRepository;
         _organizationUserRepository = organizationUserRepository;
@@ -79,6 +81,7 @@ public class OrganizationUsersController : Controller
         _authorizationService = authorizationService;
         _applicationCacheService = applicationCacheService;
         _featureService = featureService;
+        _collectionAuthorizationHelpers = collectionAuthorizationHelpers;
     }
 
     [HttpGet("{id}")]
@@ -342,9 +345,20 @@ public class OrganizationUsersController : Controller
         }
 
         var organizationAbility = await _applicationCacheService.GetOrganizationAbilityAsync(orgId);
-        var groups = GetGroupAccessToUpdate(model, organizationAbility, organizationUser);
-        var collections = await GetCollectionAccessToUpdateAsync(organizationAbility, model);
         var userId = _userService.GetProperUserId(User).Value;
+
+        // If admins are not allowed access to all collections, you cannot add yourself to a group
+        // In this case we just don't update groups
+        var restrictEditingGroups = _featureService.IsEnabled(FeatureFlagKeys.FlexibleCollectionsV1) &&
+                                    organizationAbility.FlexibleCollections &&
+                                    userId == organizationUser.UserId &&
+                                    !organizationAbility.AllowAdminAccessToAllCollectionItems;
+
+        var groups = restrictEditingGroups
+            ? null
+            : model.Groups;
+
+        var collections = await _collectionAuthorizationHelpers.GetCollectionAccessToUpdateAsync(User, organizationAbility, model.Collections);
 
         await _organizationService.SaveUserAsync(model.ToOrganizationUser(organizationUser), userId,
             collections, groups);
@@ -603,73 +617,5 @@ public class OrganizationUsersController : Controller
         }
 
         return type;
-    }
-
-    private IEnumerable<Guid> GetGroupAccessToUpdate(OrganizationUserUpdateRequestModel model,
-        OrganizationAbility organizationAbility, OrganizationUser userToUpdate)
-    {
-        var userId = _userService.GetProperUserId(User).Value;
-
-        // If admins are not allowed access to all collections, you cannot add yourself to a group
-        // In this case we just don't update groups
-        var restrictEditingGroups = _featureService.IsEnabled(FeatureFlagKeys.FlexibleCollectionsV1) &&
-                                    organizationAbility.FlexibleCollections &&
-                                    userId == userToUpdate.UserId &&
-                                    !organizationAbility.AllowAdminAccessToAllCollectionItems;
-
-        return restrictEditingGroups
-            ? null
-            : model.Groups;
-    }
-
-    /// <summary>
-    /// The client will only send updated CollectionAccessSelections that the saving user has permissions to change.
-    /// We need to match these up with CollectionAccessSelections that the saving user DOESN'T have permissions to
-    /// change, so that we don't blast them away when we update the database.
-    /// </summary>
-    private async Task<List<CollectionAccessSelection>> GetCollectionAccessToUpdateAsync(
-        OrganizationAbility organizationAbility,
-        OrganizationUserUpdateRequestModel model)
-    {
-        var collections = model.Collections?.Select(c => c.ToSelectionReadOnly()).ToList() ?? [];
-
-        // If the current user can edit any collection, we can safely replace all the target orgUser's collection access
-        var canEditAnyCollection =
-            (await _authorizationService.AuthorizeAsync(User, CollectionOperations.EditAll(organizationAbility.Id))).Succeeded;
-        if (!organizationAbility.FlexibleCollections || canEditAnyCollection)
-        {
-            return collections;
-        }
-
-        // If the current user cannot edit any collection, we need to add existing readonly collection associations
-
-        // get the target orgUser's current collection associations
-        var (_, targetUserCurrentCollections) =
-            await _organizationUserRepository.GetByIdWithCollectionsAsync(organizationAbility.Id);
-
-        // get the saving user's current collection permissions
-        var savingUserCollections =
-            await _collectionRepository.GetManyByUserIdAsync(_currentContext.UserId.Value, false);
-        var editableCollectionIds = savingUserCollections
-            .Where(c => c.Manage)
-            .Select(c => c.Id)
-            .ToHashSet();
-
-        // identify the collections we can't edit
-        var readonlyAssociations =
-            targetUserCurrentCollections
-                .Where(cas => !editableCollectionIds.Contains(cas.Id))
-                .ToList();
-
-        // Make sure we're not trying to create or modify access to a collection we can't manage
-        var readonlyAssociationIds = readonlyAssociations
-            .Select(cas => cas.Id)
-            .ToHashSet();
-        if (collections.Any(c => readonlyAssociationIds.Contains(c.Id)))
-        {
-            throw new BadRequestException("You must have Can Manage permissions to edit a collection's membership");
-        }
-
-        return collections.Concat(readonlyAssociations).ToList();
     }
 }
