@@ -344,7 +344,6 @@ public class OrganizationUsersController : Controller
             throw new NotFoundException();
         }
 
-
         // If admins are not allowed access to all collections, you cannot add yourself to a group
         // In this case we just don't update groups
         var userId = _userService.GetProperUserId(User).Value;
