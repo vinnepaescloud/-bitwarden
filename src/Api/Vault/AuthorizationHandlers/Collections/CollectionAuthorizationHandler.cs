@@ -55,8 +55,8 @@ public class CollectionAuthorizationHandler : AuthorizationHandler<CollectionOpe
                 await CanReadAllWithAccessAsync(context, requirement, org);
                 break;
 
-            case not null when requirement.Name == nameof(CollectionOperations.EditAll):
-                await CanEditAllAsync(context, requirement, org);
+            case not null when requirement.Name == nameof(CollectionOperations.UpdateAll):
+                await CanUpdateAllAsync(context, requirement, org);
                 break;
         }
     }
@@ -106,7 +106,7 @@ public class CollectionAuthorizationHandler : AuthorizationHandler<CollectionOpe
         }
     }
 
-    private async Task CanEditAllAsync(AuthorizationHandlerContext context, CollectionOperationRequirement requirement,
+    private async Task CanUpdateAllAsync(AuthorizationHandlerContext context, CollectionOperationRequirement requirement,
         CurrentContextOrganization? org)
     {
         // Users with EditAnyCollection permission can always update a collection

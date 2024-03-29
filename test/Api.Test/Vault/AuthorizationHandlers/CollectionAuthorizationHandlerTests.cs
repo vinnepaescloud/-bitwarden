@@ -309,7 +309,7 @@ public class CollectionAuthorizationHandlerTests
         organization.Permissions = new Permissions();
 
         var context = new AuthorizationHandlerContext(
-            new[] { CollectionOperations.EditAll(organization.Id) },
+            new[] { CollectionOperations.UpdateAll(organization.Id) },
             new ClaimsPrincipal(),
             null);
 
@@ -335,7 +335,7 @@ public class CollectionAuthorizationHandlerTests
         organizationAbility.AllowAdminAccessToAllCollectionItems = true;
 
         var context = new AuthorizationHandlerContext(
-            new[] { CollectionOperations.EditAll(organization.Id) },
+            new[] { CollectionOperations.UpdateAll(organization.Id) },
             new ClaimsPrincipal(),
             null);
 
@@ -363,7 +363,7 @@ public class CollectionAuthorizationHandlerTests
         organizationAbility.AllowAdminAccessToAllCollectionItems = false;
 
         var context = new AuthorizationHandlerContext(
-            new[] { CollectionOperations.EditAll(organization.Id) },
+            new[] { CollectionOperations.UpdateAll(organization.Id) },
             new ClaimsPrincipal(),
             null);
 

@@ -40,7 +40,7 @@ public class CollectionAuthorizationHelpers : ICollectionAuthorizationHelpers
 
         // If the current user can edit any collection, we can safely replace all the target orgUser's collection access
         var canEditAnyCollection =
-            (await _authorizationService.AuthorizeAsync(user, CollectionOperations.EditAll(organizationAbility.Id))).Succeeded;
+            (await _authorizationService.AuthorizeAsync(user, CollectionOperations.UpdateAll(organizationAbility.Id))).Succeeded;
         if (!organizationAbility.FlexibleCollections || canEditAnyCollection)
         {
             return collections;

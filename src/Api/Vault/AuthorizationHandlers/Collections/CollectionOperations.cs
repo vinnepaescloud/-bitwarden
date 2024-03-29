@@ -24,9 +24,9 @@ public static class CollectionOperations
         return new CollectionOperationRequirement(nameof(ReadAllWithAccess), organizationId);
     }
 
-    public static CollectionOperationRequirement EditAll(Guid organizationId)
+    public static CollectionOperationRequirement UpdateAll(Guid organizationId)
     {
-        return new CollectionOperationRequirement(nameof(EditAll), organizationId);
+        return new CollectionOperationRequirement(nameof(UpdateAll), organizationId);
     }
 }
 
